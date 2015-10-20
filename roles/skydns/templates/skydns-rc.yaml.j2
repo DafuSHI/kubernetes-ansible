@@ -1,50 +1,40 @@
-# From https://github.com/GoogleCloudPlatform/kubernetes/tree/master/cluster/addons/dns
+# From https://github.com/kubernetes/kubernetes/blob/master/cluster/libvirt-coreos/skydns-rc.yaml 
 
+apiVersion: v1
 kind: ReplicationController
-apiVersion: v1beta1
-id: kube-dns
-namespace: default
-labels:
-  k8s-app: kube-dns
-  kubernetes.io/cluster-service: "true"
-desiredState:
-  replicas: 1
-  replicaSelector:
+metadata:
+  labels:
     k8s-app: kube-dns
-  podTemplate:
-    labels:
-      name: kube-dns
-      k8s-app: kube-dns
-      kubernetes.io/cluster-service: "true"
-    desiredState:
-      manifest:
-        version: v1beta2
-        id: kube-dns
-        dnsPolicy: "Default"  # Don't use cluster DNS.
-        containers:
-          - name: etcd
-            image: quay.io/coreos/etcd:v2.0.3
-            command: [
-                    # entrypoint = "/etcd",
-                    "-listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001",
-                    "-initial-cluster-token=skydns-etcd",
-                    "-advertise-client-urls=http://127.0.0.1:4001",
-            ]
-          - name: kube2sky
-            image: kubernetes/kube2sky:1.1
-            command: [
-                    # entrypoint = "/kube2sky",
-                    "-domain={{ dns_domain }}",
-            ]
-          - name: skydns
-            image: kubernetes/skydns:2015-03-11-001
-            command: [
-                    # entrypoint = "/skydns",
-                    "-machines=http://localhost:4001",
-                    "-addr=0.0.0.0:53",
-                    "-domain={{ dns_domain }}.",
-            ]
-            ports:
-              - name: dns
-                containerPort: 53
-                protocol: UDP
+  name: kube-dns
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    k8s-app: kube-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-dns
+    spec:
+      containers:
+      - args:
+        - \"/etcd\"
+        - \"-bind-addr=127.0.0.1\"
+        - \"-peer-bind-addr=127.0.0.1\"
+        image: quay.io/coreos/etcd:latest
+        name: etcd
+      - args:
+        - \"-domain={{ dns_domain }}\"
+        image: kubernetes/kube2sky:1.0
+        name: kube2sky
+      - args:
+        - \"-machines=http://localhost:4001\"
+        - \"-addr=0.0.0.0:53\"
+        - \"-domain={{ dns_domain }}.\"
+        image: kubernetes/skydns:2014-12-23-001
+        name: skydns
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+

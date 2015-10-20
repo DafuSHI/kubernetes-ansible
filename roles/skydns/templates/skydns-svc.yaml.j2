@@ -1,16 +1,19 @@
-# From https://github.com/GoogleCloudPlatform/kubernetes/tree/master/cluster/addons/dns
+# From https://github.com/kubernetes/kubernetes/blob/master/cluster/libvirt-coreos/skydns-svc.yaml 
 
+apiVersion: v1
 kind: Service
-apiVersion: v1beta1
-id: kube-dns
-namespace: default
-protocol: UDP
-port: 53
-portalIP: {{ dns_server }}
-containerPort: 53
-labels:
-  k8s-app: kube-dns
+metadata:
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
   name: kube-dns
-  kubernetes.io/cluster-service: "true"
-selector:
-  k8s-app: kube-dns
+  namespace: kube-system
+spec:
+  portalIP: {{ dns_server }}
+  ports:
+  - port: 53
+    protocol: UDP
+    targetPort: 53
+  selector:
+    k8s-app: kube-dns
+

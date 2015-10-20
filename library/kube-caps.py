@@ -11,7 +11,7 @@ def main():
 
     facts = {}
     facts['kube_node_via_api'] = True
-    facts['kube_node_v1beta3'] = True
+    facts['kube_node_v1'] = True
     facts['kubelet_use_pre_v10_vars'] = False
 
     result = {}
@@ -34,17 +34,17 @@ def main():
         module.fail_json(msg="Minor not found!")
     minor = int(match.group(1))
 
-    if minor < 10:
+    if minor < 10 and major < 0:
         facts['kube_node_via_api'] = False
         facts['kubelet_use_pre_v10_vars'] = True
 
-    args = ("kubectl", "apiversions")
+    args = ("kubectl", "api-versions")
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)
     popen.wait()
 
     output = popen.stdout.read()
-    if "v1beta3" not in output:
-	facts['kube_node_v1beta3'] = False
+    if "v1" not in output:
+	facts['kube_node_v1'] = False
 
     module.exit_json(**result)
 

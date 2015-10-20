@@ -1,15 +1,15 @@
 ---
-- name: Copy v1beta3 style minion definitions to master
-  template: src=node-v1beta3.j2 dest=/tmp/node-{{ item }}.json
+- name: Copy v1 style minion definitions to master
+  template: src=node-v1.j2 dest=/tmp/node-{{ item }}.json
   changed_when: false
-  when: kube_node_v1beta3
+  when: kube_node_v1
   with_items:
         groups['minions']
 
-- name: Copy old v1beta1 style minion definitions to master
+- name: Copy old v1 style minion definitions to master
   template: src=node.j2 dest=/tmp/node-{{ item }}.json
   changed_when: false
-  when: not kube_node_v1beta3
+  when: not kube_node_v1
   with_items:
         groups['minions']
 
